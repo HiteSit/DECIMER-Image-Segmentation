@@ -255,6 +255,7 @@ def complete_structure_mask(
     mask_array: np.array,
     max_depiction_size: Tuple[int, int],
     debug=False,
+    custom_set = 180
 ) -> np.array:
     """
     This funtion takes an image (np.array) and an array containing the masks (shape:
@@ -284,7 +285,7 @@ def complete_structure_mask(
             plot_it(binarized_image_array)
         # Apply dilation with a resolution-dependent kernel to the image
         blur_factor = (
-            int(image_array.shape[1] / 185) if image_array.shape[1] / 185 >= 2 else 2
+            int(image_array.shape[1] / custom_set) if image_array.shape[1] / custom_set >= 2 else 2       # TODO: Replaced
         )
         kernel = np.ones((blur_factor, blur_factor))
         blurred_image_array = binary_erosion(binarized_image_array, footprint=kernel)
