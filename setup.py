@@ -2,6 +2,7 @@
 
 import setuptools
 import platform
+import subprocess
 
 # Determine the base TensorFlow package
 if (
