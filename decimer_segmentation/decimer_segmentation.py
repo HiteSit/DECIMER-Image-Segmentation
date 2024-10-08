@@ -70,7 +70,7 @@ def segment_chemical_structures_from_file(
     if len(images) > 1:
         with Pool(4) as pool:
             starmap_args = [(im, expand) for im in images]
-            segments = pool.starmap(segment_chemical_structures, starmap_args)
+            segments, _ = pool.starmap(segment_chemical_structures, starmap_args)
             segments = [su for li in segments for su in li]
     else:
         segments = segment_chemical_structures(images[0])
@@ -80,8 +80,9 @@ def segment_chemical_structures_from_file(
 def segment_chemical_structures(
     image: np.array,
     expand: bool = True,
+    custom_set = 180,
     visualization: bool = False,
-) -> List[np.array]:
+) -> Tuple[List[np.array], List[Tuple[int, int, int, int]]]:
     """
     This function runs the segmentation model as well as the mask expansion
     -> returns a List of segmented chemical structure depictions (np.array)
@@ -99,7 +100,7 @@ def segment_chemical_structures(
     if not expand:
         masks, bboxes, _ = get_mrcnn_results(image)
     else:
-        masks = get_expanded_masks(image)
+        masks = get_expanded_masks(image, custom_set)
 
     segments, bboxes = apply_masks(image, masks)
 
@@ -113,13 +114,13 @@ def segment_chemical_structures(
         )
 
     if len(segments) > 0:
-        segments, bboxes = sort_segments_bboxes(segments, bboxes)
+        segments, bboxes = sort_segments_bboxes(segments, bboxes)       # bboxes = (y0, x0, y1, x1)
 
     segments = [segment for segment in segments
                 if segment.shape[0] > 0
                 if segment.shape[1] > 0]
 
-    return segments
+    return segments, bboxes
 
 
 def determine_depiction_size_with_buffer(
@@ -217,7 +218,7 @@ def load_model() -> modellib.MaskRCNN:
     return model
 
 
-def get_expanded_masks(image: np.array) -> np.array:
+def get_expanded_masks(image: np.array, custom_set) -> np.array:
     """
     This function runs the segmentation model and returns an
     array with the masks (shape: height, width, num_masks).
@@ -240,7 +241,8 @@ def get_expanded_masks(image: np.array) -> np.array:
         image_array=image,
         mask_array=masks,
         max_depiction_size=size,
-        debug=False
+        debug=False,
+        custom_set=custom_set,
     )
     return expanded_masks
 
