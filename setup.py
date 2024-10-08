@@ -3,12 +3,21 @@
 import setuptools
 import platform
 
+# Determine the base TensorFlow package
 if (
     platform.processor() == "arm" or platform.processor() == "i386"
 ) and platform.system() == "Darwin":
     tensorflow_os = "tensorflow-macos==2.10.0"
 else:
-    tensorflow_os = "tensorflow==2.12.0"
+    # Check for CUDA-compatible GPU
+    try:
+        # Use nvidia-smi if available to check for CUDA support
+        if subprocess.run(["nvidia-smi"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
+            tensorflow_os = "tensorflow[and-cuda]>=2.12.0,<=2.15.0"
+        else:
+            tensorflow_os = "tensorflow-cpu==2.12.0"
+    except FileNotFoundError:
+        tensorflow_os = "tensorflow-cpu==2.12.0"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -28,14 +37,18 @@ setuptools.setup(
     license="MIT",
     install_requires=[
         tensorflow_os,
-        "numpy>=1.2.0",
+        "numpy>=1.20.0,<1.25.0",
         "scikit-image>=0.2.0",
         "pillow",
         "opencv-python",
         "matplotlib",
         "IPython",
-        "pdf2image",
-        "scipy"
+        "scipy",
+        "pandas",
+        "notebook",
+        "rdkit",
+        "datamol",
+        "scikit-image"
     ],
     package_data={"decimer_segmentation": ["mrcnn/*.*"]},
     classifiers=[
