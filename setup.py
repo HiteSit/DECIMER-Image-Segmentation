@@ -5,20 +5,34 @@ import platform
 import subprocess
 
 # Determine the base TensorFlow package
-if (
-    platform.processor() == "arm" or platform.processor() == "i386"
-) and platform.system() == "Darwin":
+if (platform.processor() == "arm" or platform.processor() == "i386") and platform.system() == "Darwin":
     tensorflow_os = "tensorflow-macos==2.10.0"
 else:
-    # Check for CUDA-compatible GPU
+    # Initialize TensorFlow package as CPU version by default
+    tensorflow_os = "tensorflow-cpu==2.12.0"
+    
+    # Check for NVIDIA CUDA support
     try:
-        # Use nvidia-smi if available to check for CUDA support
-        if subprocess.run(["nvidia-smi"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
+        nvidia_smi = subprocess.run(
+            ["nvidia-smi"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        if nvidia_smi.returncode == 0:
             tensorflow_os = "tensorflow[and-cuda]>=2.12.0,<=2.15.0"
-        else:
-            tensorflow_os = "tensorflow-cpu==2.12.0"
     except FileNotFoundError:
-        tensorflow_os = "tensorflow-cpu==2.12.0"
+        # If nvidia-smi is not found, check for AMD ROCm support
+        try:
+            rocm_smi = subprocess.run(
+                ["rocm-smi"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if rocm_smi.returncode == 0:
+                tensorflow_os = "tensorflow-rocm==2.12.0"  # Replace with the desired ROCm-compatible version
+        except FileNotFoundError:
+            # If neither nvidia-smi nor rocm-smi is found, keep the CPU version
+            pass
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
