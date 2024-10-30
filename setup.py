@@ -29,7 +29,7 @@ else:
                 stderr=subprocess.PIPE
             )
             if rocm_smi.returncode == 0:
-                tensorflow_os = "tensorflow-rocm==2.12.0"  # Replace with the desired ROCm-compatible version
+                tensorflow_os = "tensorflow-rocm>=2.12.0,<=2.15.0"  # Replace with the desired ROCm-compatible version
         except FileNotFoundError:
             # If neither nvidia-smi nor rocm-smi is found, keep the CPU version
             pass
