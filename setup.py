@@ -32,7 +32,8 @@ else:
                 tensorflow_os = "tensorflow-rocm>=2.12.0,<=2.15.0"  # Replace with the desired ROCm-compatible version
         except FileNotFoundError:
             # If neither nvidia-smi nor rocm-smi is found, keep the CPU version
-            pass
+            # DEBUG FOR LUMI HPC
+            tensorflow_os = "tensorflow-rocm>=2.12.0,<=2.15.0"  # Replace with the desired ROCm-compatible version
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
